@@ -1,32 +1,50 @@
 package br.ucsal.readFile;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 public class ReadFile {
 
     public static void main(String[] args) throws FileNotFoundException {
-        getFile("");
+        getFolder("");
     }
 
+    public static void getFolder(String dirPath) {
+        try(Stream<Path> paths = Files.walk(Paths.get(dirPath))){
+           paths.filter(Files::isRegularFile)
+                   .forEach(x -> {
+                       try {
+                           getFile(x.toFile());
+                       } catch (FileNotFoundException e) {
+                           e.printStackTrace();
+                       }
+                   });
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-    private static void getFile(String dirPath) throws FileNotFoundException {
-        BufferedReader codigo = new BufferedReader(new FileReader(dirPath));
+    private static void getFile(File file) throws FileNotFoundException {
+        System.out.println(file.getName());
+        BufferedReader codigo = new BufferedReader(new FileReader(file));
         int lines = 0, methods = 0, classes = 0;
 
             try {
-              while(codigo .ready()){
+              while(codigo.ready()){
                     String line = codigo.readLine();
                     line = line.replaceAll("^\\s+", "");
+                    line = line.replaceAll("\\s+", "");
                     lines++;
                     if (countClass(line))
                         classes++;
                     if(countMethod(line))
                         methods++;
                 }
+
                 System.out.println("Linhas: " + lines);
                 System.out.println("Classes : " + classes);
                 System.out.println("Metodos : " + methods);
